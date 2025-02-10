@@ -1,221 +1,3 @@
-
-
-<script setup>
-/* eslint-disable */
-import { onMounted, ref, watchEffect } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
-
-const message = ref('Welcome to the Home Page!');
-
-
-onMounted(() => {
-    fetchUserData();
-    fetchPosts();
-})
-
-const router = useRouter();
-const isLoggedIn = ref(false); // Add a reactive state for login status
-
-const TOKEN_KEY = 'access_token';
-
-
-const posts = ref([
-
-    
-]);
-
-const newPost = ref({
-    title: '',
-    message: '',
-    type: 'news', // Default type
-    author: '' // This should be set to the user who created it
-});
-
-const firstName = ref('');
-const lastName = ref('');
-const editingPost = ref(null);
-const loggedUserId = ref(null);
-
-const postTypes = ['news', 'update', 'task']; // Define the allowed post types
-
-
-const getAccessToken = () => {
-    const cookieString = document.cookie;
-    
-    const cookies = cookieString.split(';');
-    console.log('Cookies:', cookies);
-
-    for(let i = 0; i < cookies.length; i++){
-        const cookie = cookies[i].trim();
-        if(cookie.startsWith(TOKEN_KEY + '=')){
-            return cookie.substring((TOKEN_KEY).length +1);
-        }
-    }
-    return null;
-}
-
-const fetchUserData = async () => {
-            try {
-                const token = getAccessToken();
-                if (token) {
-                    const response = await axios.get('http://localhost:8000/api/user', {
-                        headers: {
-                            Authorization: `Bearer ${token}`  // Important: Send token as Bearer
-                        }
-                    });
-
-                  
-                    if (response.data && response.data.data.first_name && response.data.data.last_name && response.data.data.id) {
-                        firstName.value = response.data.data.first_name;
-                        lastName.value = response.data.data.last_name;
-                        loggedUserId.value = response.data.data.id;
-                    } else {
-                        console.error('Could not retrieve user data dumb');
-                        console.log(response.data)
-
-                        console.log('first name ' + response.data.first_name)
-                        console.log('last name ' + response.data.last_name)
-
-                    }
-                }
-            } catch (error) {
-                console.error('Failed to fetch user data:', error); // Log the error object for details
-            }
-        };
-
-const removeToken = () => {
-    document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-}
-const checkLoginStatus = () => {
-    console.log('Checking login status...');
-    const token = getAccessToken();
-    console.log('Access token:', token);
-
-    isLoggedIn.value = token !== null;
-}
-
-
-
-
-const goToLogin = () => {
-    router.push('/login');
-};
-
-const goToRegister = () => {
-    router.push('/register');
-};
-
-const goToCreatePost = () => {
-    router.push('/create-post');
-}
-
-const logout = async () => {
-    try{
-        const token = getAccessToken();
-        const response = await fetch('http://localhost:8000/api/auth/logout', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if(response.ok){
-            removeToken();
-            isLoggedIn.value = false;
-            router.push('/');
-        }else{
-            console.error('Logout failed:', response.statusText);
-            alert('Logout failed: ' + response.statusText);
-        }
-    }catch(error){
-        console.error('Logout failed:', error.message);
-        alert('Logout failed: ' + error.message);
-    }
-    
-};
-const setEditingPost = (post) => {
-    if(!post){
-        console.error('No post to edit.');
-        return;
-    }
-    editingPost.value = { ...post };
-}
-const goToSettings = () => {
-    router.push('/settings')
-}
-
-const fetchPosts = async () => {
-    try{
-        const response = await fetch('http://localhost:8000/api/posts');
-        if(response.ok){
-            const data = await response.json();
-            posts.value = data.data;
-            console.log('Posts:', posts.value);
-        } else{
-            console.error('Failed to fetch posts:', response.statusText);
-        }
-    }catch(error){
-        console.error('Failed to fetch posts:', error.message);
-    }
-}
-
-
-
-
-const updatePost = async () => {
-    if (!editingPost.value) {
-        console.error('No post to edit.');
-        return;
-    }
-    try {
-        const token = getAccessToken();
-        const response = await fetch(`http://localhost:8000/api/posts/${editingPost.value.id}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(editingPost.value)
-        });
-        if (response.ok) {
-            fetchPosts();
-            editingPost.value = null;
-        } else {
-            console.error('Failed to update post:', response.statusText);
-        }
-    } catch (error) {
-        console.error('Failed to update post:', error.message);
-    }
-};
-const deletePost = async (id) => {
-    try{
-        const token = getAccessToken();
-        const response = await fetch(`http://localhost:8000/api/posts/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        if(response.ok){
-            console.log('Post deleted successfully');
-            fetchPosts();
-        } else{
-            console.log('Error deleting Post:', error);
-        }
-    }catch(error){
-        console.error('Error deleting Post:', error.message);
-    }
-}
-const cancelEdit = () => {
-      editingPost.value = null
-    }
-
-watchEffect(() => {
-    checkLoginStatus();
-})
-</script>
-
 <template>
     <div class="container">
       <header class="header">
@@ -225,7 +7,7 @@ watchEffect(() => {
             <h1 class="app-title">Project Hub</h1>
           </div>
           <div class="nav-buttons">
-              <button v-if="!isLoggedIn" @click="goToLogin" class="btn primary">Login</button>
+              <button v-if="!isLoggedIn" @click="goToLogin" class="btn secondary">Login</button>
               <button v-if="!isLoggedIn" @click="goToRegister" class="btn primary">Register</button>
               <button v-if="isLoggedIn" @click="logout" class="btn icon-btn">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 0 1 2 2v2h-2V4H5v16h9v-2h2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9z"/></svg>
@@ -261,7 +43,7 @@ watchEffect(() => {
             <template v-if="editingPost && editingPost.id === post.id"> 
               <div class="edit-form">
                 <input type="text" v-model="editingPost.title" class="edit-input" placeholder="Post Title" />
-                <textarea v-model="editingPost.message" class="edit-textarea" placeholder="Post Content" ></textarea>
+                <textarea v-model="editingPost.message" class="edit-textarea" placeholder="Post Content"></textarea>
                 <select v-model="editingPost.type" class="edit-select">
                   <option value="news">News</option>
                   <option value="update">Update</option>
@@ -269,14 +51,14 @@ watchEffect(() => {
                 </select>
                 <div class="form-actions">
                   <button @click="updatePost(post)" class="btn primary">Save Changes</button>
-                  <button @click="cancelEdit" class="btn primary">Cancel</button>
+                  <button @click="cancelEdit" class="btn secondary">Cancel</button>
                 </div>
               </div>
             </template>
             <template v-else>
               <div class="post-header">
                 <div class="post-type">{{ post.type }}</div>
-                <h1 class="post-title">{{ post.title }}</h1>
+                <h3 class="post-title">{{ post.title }}</h3>
               </div>
               <p class="post-content">{{ post.message }}</p>
               <div class="post-footer">
@@ -332,10 +114,6 @@ watchEffect(() => {
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   box-shadow: var(--shadow-md);
   padding: 1rem 0;
-  background-color: #2563eb;
-  height: 100px;
-
-
 }
 
 .header-content {
@@ -462,6 +240,7 @@ watchEffect(() => {
 .user-name {
   color: var(--text-color);
   font-size: 1.25rem;
+  font-weight: 500;
 }
 
 .posts-header {
@@ -495,7 +274,6 @@ watchEffect(() => {
   box-shadow: var(--shadow-md);
   transition: transform 0.2s ease;
   border-left: 4px solid var(--primary-color);
-  background-color: #64748b;
 }
 
 .post-card:hover {
@@ -533,7 +311,8 @@ watchEffect(() => {
 }
 
 .post-content {
-  color: black;
+  color: var(--text-color);
+  opacity: 0.9;
   line-height: 1.6;
   margin-bottom: 1.5rem;
 }
@@ -566,7 +345,7 @@ watchEffect(() => {
 
 .author-name {
   font-size: 0.875rem;
-  color: black;
+  color: var(--text-color);
 }
 
 .post-actions {
@@ -584,17 +363,23 @@ watchEffect(() => {
 .edit-input, .edit-textarea, .edit-select {
   width: 100%;
   padding: 0.75rem;
+  color: var(--text-color);
+  background-color: white;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   font-family: inherit;
-  
   font-size: 0.875rem;
 }
-
 
 .edit-input:focus, .edit-textarea:focus, .edit-select:focus {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
+}
+
+.edit-input::placeholder,
+.edit-textarea::placeholder {
+  color: #94a3b8;
+  opacity: 0.8;
 }
 
 .form-actions {
@@ -618,4 +403,4 @@ watchEffect(() => {
     padding: 1rem;
   }
 }
-</style>
+</style> 

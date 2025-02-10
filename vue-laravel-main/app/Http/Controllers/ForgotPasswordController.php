@@ -3,32 +3,60 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
+use App\Models\case_type;
+use App\Models\city;
+use App\Models\campaign;
+use App\Models\casee;
+use App\Models\blood;
+use App\Models\User;
+use App\Models\bloodCases;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Controllers\Controller;
-
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Auth\Events\PasswordReset;
 class ForgotPasswordController extends Controller
 {
     public function sendResetLinkEmail(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:users,email', // ✅ Validation is enough to check existence
+        $request->validate(['email' => 'required|email']);
+
+        $response = $this->broker()->sendResetLink($request->only('email'));
+
+        if ($response == Password::RESET_LINK_SENT) {
+            return response()->json(['message' => 'Reset link sent to your email.']);
+        }
+
+        return response()->json(['error' => 'Failed to send reset link.'], 400);
+    }
+
+    protected function broker()
+    {
+        return Password::broker();
+    }
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|confirmed',
+            
+
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        $response = $this->broker()->reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->password = Hash::make($password);
+                $user->save();
+            }
+        );
+
+        if ($response == Password::PASSWORD_RESET) {
+            return response()->json(['message' => 'Password has been reset.']);
         }
 
-        // Send reset link
-        $status = Password::sendResetLink($request->only('email'));
-
-        if ($status == Password::RESET_LINK_SENT) {
-            return response()->json([
-                'status' => 'Password reset link sent to your email.',
-                'reset_url' => env('APP_URL') . '/reset-password?email=' . $request->email
-            ]);
-        }
-
-        return response()->json(['error' => __($status)], 500);
+        return response()->json(['error' => 'Failed to reset password.'], 400);
     }
+
 }

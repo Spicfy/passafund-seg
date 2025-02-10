@@ -7,7 +7,7 @@ import Register from "./pages/Register.vue";
 import NotFound from "./pages/NotFound.vue";
 
 import ForgotPassword from './pages/ForgotPassword.vue';
-
+import ResetPassword from './pages/ResetPassword.vue';
 import Settings from './pages/Settings.vue';
 import CreatePost from './pages/CreatePost.vue';
 const routes = [
@@ -51,6 +51,16 @@ const routes = [
         name: 'CreatePost',
         component: CreatePost
 
+    },
+    {
+        path: '/forgot-password',
+        name: 'forgot-password',
+        component: ForgotPassword
+    },
+    {
+        path: '/reset-password',
+        name: 'reset-password',
+        component: ResetPassword
     }
 ];
 

@@ -19,7 +19,9 @@ Route::group([
 
     Route::post('/password/forgot', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.forgot');
     Route::post('/password/reset', [AuthController::class, 'resetPassword'])->name('password.reset');
-
+    
+    Route::post('/password/forgot', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.forgot');
+    Route::post('/password/reset', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
     
 });
 
@@ -39,8 +41,14 @@ Route::group([
 
     Route::put('/posts/{id}', [PostController::class, 'update']);
     Route::delete('/posts/{id}', [PostController::class, 'destroy']);
+    
 
 
 });
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{id}', [PostController::class, 'show']);
+
+Route::get('/reset-password/{token}', function(string $token){
+    return view('auth.reset-password'. ['token' => $token]);
+})->middleware('guest')->name('password.reset');
+

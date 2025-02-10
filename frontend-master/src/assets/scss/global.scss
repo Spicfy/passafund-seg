@@ -1,0 +1,31 @@
+:root {
+  --primary: #1976D2;
+  --secondary: #424242;
+  --success: #4CAF50;
+  --info: #2196F3;
+  --warning: #FFC107;
+}
+
+.v-application {
+  font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+}
+
+.text-h5 {
+  font-weight: 500;
+  letter-spacing: 0.015em;
+}
+
+.v-card {
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.v-btn {
+  text-transform: none;
+  letter-spacing: 0.025em;
+} 

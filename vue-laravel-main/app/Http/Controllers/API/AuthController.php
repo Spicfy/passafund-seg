@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ResetPasswordMail;
+use Illuminate\Support\Facades\DB;
 
   
 class AuthController extends BaseController
@@ -238,6 +239,36 @@ public function changePassword(Request $request)
               'message' => 'Failed to update profile: ' . $e->getMessage(),
           ], 500); // Return a 500 Internal Server Error status code
       }
+    }
+      public function resetPassword(Request $request)
+      {
+          $validator = Validator::make($request->all(), [
+              'token' => 'required',
+              'email' => 'required|email|exists:users,email',
+              'password' => 'required|string|min:8|confirmed',
+          ]);
+      
+          if ($validator->fails()) {
+              return response()->json(['message' => 'Invalid input data.'], 400);
+          }
+      
+          $record = DB::table('password_resets')->where('email', $request->email)->first();
+      
+          if (!$record || !Hash::check($request->token, $record->token)) {
+              return response()->json(['message' => 'Invalid or expired token.'], 400);
+          }
+      
+          // Update user's password
+          $user = User::where('email', $request->email)->first();
+          $user->password = Hash::make($request->password);
+          $user->save();
+      
+          // Delete token after successful reset
+          DB::table('password_resets')->where('email', $request->email)->delete();
+      
+          return response()->json(['message' => 'Password successfully reset.']);
+      }
+      
   }
 
-}
+
