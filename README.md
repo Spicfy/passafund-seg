@@ -1,6 +1,6 @@
-# Application Name
+# Post app for passafund software engineer internship asignment
 
-A brief description of your application, its purpose, and key features.
+Support User and post CRUD functionality
 
 ---
 
@@ -23,6 +23,12 @@ Make sure the following are installed on your machine:
 git clone https://github.com/your-repo-name.git
 cd your-repo-name
 
+
+---
+
+ 
+## 2. **Create .env file **
+```bash
 Copy the .env.example file and rename it to .env
 cp .env.example .env
 
