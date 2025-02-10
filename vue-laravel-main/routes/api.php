@@ -48,3 +48,7 @@ Route::group([
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{id}', [PostController::class, 'show']);
 
+Route::get('/reset-password/{token}', function(string $token){
+    return view('auth.reset-password'. ['token' => $token]);
+})->middleware('guest')->name('password.reset');
+

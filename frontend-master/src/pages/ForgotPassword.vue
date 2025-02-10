@@ -24,9 +24,10 @@ export default {
   methods: {
     async sendResetLink() {
       try {
-        const response = await axios.post('/api/auth/password/forgot', { email: this.email });
+        const response = await axios.post('http://localhost:8000/api/auth/password/forgot', { email: this.email });
         this.message = response.data.message;
       } catch (error) {
+        console.log(error);
         this.message = 'Failed to send reset link.';
       }
     }
