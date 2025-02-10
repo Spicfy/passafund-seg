@@ -52,15 +52,17 @@ const login = async() => {
                 <input id="password" v-model="password" type="password" required />
             </div>
             <button class="form_submit" type="submit">Login</button>
-      
-            <p class="to-login">
-            Don't have an account? <router-link to="/register">Register account</router-link>
-        </p>
-        </form>
 
-      
+            <p class="to-login">
+                Don't have an account? <router-link to="/register">Register account</router-link>
+            </p>
+            <p class="to-login">
+                <router-link to="/forgot-password">Forgot Password?</router-link>
+            </p>
+        </form>
     </GuestLayout>
 </template>
+
 
 <style scoped>
 

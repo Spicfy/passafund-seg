@@ -1,123 +1,88 @@
-<script>
-
-import axios from 'axios';
-
-export default {
-    data(){
-        return {
-            email: ''
-        };
-    },
-
-    methods: {
-        submitForm(){
-            axios.post('http://localhost:8000/api/forgotpassword', {email: this.email,
-            }).then(response => {
-                console.log(response.data);
-            })
-            .catch(error => {
-                console.log(error.response.data);
-            })
-        }
-    }
-}
-
-
-
-
-
-
-</script>
-
 <template>
-    <GuestLayout>
-        <form class="form-container" @submit.prevent="forgotPassword">
-            <div class="form_title">Forgot your password?</div>
-            <div class="form_field">
-                <label for="email">Email:</label>
-                <input id="email" v-model="email" type="email" required />
-            </div>
-            <button class="form_submit" type="submit">Send Password Reset Link</button>
-      
-            <p class="to-login">
-            Go home <router-link to="/">Return home</router-link>
-        </p>
-        </form>
-
-      
-    </GuestLayout>
+  <div class="forgot-password">
+    <h1>Forgot Password</h1>
+    <form @submit.prevent="sendResetLink">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" v-model="email" required>
+      </div>
+      <button type="submit">Send Reset Link</button>
+    </form>
+    <p v-if="message">{{ message }}</p>
+  </div>
 </template>
 
+<script>
+import axios from 'axios';
+export default {
+  data() {
+    return {
+      email: '',
+      message: ''
+    };
+  },
+  methods: {
+    async sendResetLink() {
+      try {
+        const response = await axios.post('/api/auth/password/forgot', { email: this.email });
+        this.message = response.data.message;
+      } catch (error) {
+        this.message = 'Failed to send reset link.';
+      }
+    }
+  }
+};
+</script>
+
 <style scoped>
-
-
-form {
-    display: grid;
-    gap: 20px;
-    grid-template-rows: auto auto auto; /* Adjust based on actual content */
-grid-template-columns: 1fr;
-
-    align-items: center;
-    padding: 30px;
-    max-width: 450px;
-    border-radius: 10px;
-    box-shadow: rgba(3, 3, 3, 0.1) 10px 0px 50px;
-
-    width: 100%;
-
-
-    margin-top: 40px;
-    background-color: #fff;
-
-    margin-left: 500px;
-}
-.form_title{
-    font-size: 38px;
-    color: #555;
-    margin-bottom: 7px;
-    margin-left: 120px;
-    
-}
-.form_field{
-    margin-bottom: 20px;
-
+.forgot-password {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
 }
 
-label {
-    margin-bottom: 10px;
-    font-size: 15px;
-    font-weight: 600;
-    color: #777;
+.forgot-password h1 {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-input {
-   
-   width: 100%;
-    border: 0;
-    background: #f0f0f0;
-    border-radius: 5px;
-    font-size: 18px;
-    color: #555;
-    font-weight: 600;
-}
-.form_submit{
-    background: #037ef3;
-    color: #fff;
-    font-weight: 600;
-    width: 100%;
-    border-radius: 5px;
-    padding: 25px 15px;
-    border: 0;
-    transition: all 0.8s;
-    font-size: 18px;
-}
-.form_submit:hover{
-    background: #0271da;
+.forgot-password .form-group {
+  margin-bottom: 15px;
 }
 
-button {
-    padding: 0.5rem;
-    font-size: 1rem;
-    cursor: pointer;
+.forgot-password label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.forgot-password input[type="email"] {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.forgot-password button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.forgot-password button:hover {
+  background-color: #0056b3;
+}
+
+.forgot-password p {
+  text-align: center;
+  margin-top: 20px;
+  color: green;
 }
 </style>

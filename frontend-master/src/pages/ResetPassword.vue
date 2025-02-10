@@ -3,30 +3,41 @@
       <h1>Reset Password</h1>
       <form @submit.prevent="resetPassword">
         <div>
-          <label for="email">Email</label>
-          <input type="email" v-model="email" required>
+          <label for="password">New Password</label>
+          <input type="password" v-model="password" required>
         </div>
-        <button type="submit">Send Reset Link</button>
+        <div>
+          <label for="password_confirmation">Confirm Password</label>
+          <input type="password" v-model="password_confirmation" required>
+        </div>
+        <button type="submit">Reset Password</button>
       </form>
       <p v-if="message">{{ message }}</p>
     </div>
   </template>
   
   <script>
+  import axios from 'axios';
   export default {
     data() {
       return {
-        email: '',
+        password: '',
+        password_confirmation: '',
         message: ''
       };
     },
     methods: {
       async resetPassword() {
         try {
-          const response = await axios.post('/api/password/email', { email: this.email });
+          const response = await axios.post('/api/auth/password/reset', {
+            token: this.$route.params.token,
+            email: this.$route.params.email,
+            password: this.password,
+            password_confirmation: this.password_confirmation
+          });
           this.message = response.data.message;
         } catch (error) {
-          this.message = 'Failed to send reset link.';
+          this.message = 'Failed to reset password.';
         }
       }
     }

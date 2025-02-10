@@ -355,7 +355,7 @@ watchEffect(() => {
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: calc(100vh - 200px); /* Use remaining height */
+      height: 200px; /* Use remaining height */
       background-color: #f0f0f0;
   
   }

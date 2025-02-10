@@ -48,7 +48,9 @@ class ForgotPassword extends Mailable
      * @return $this
      */
     public function build(){
-        return $this->subject('Reset Password Notification');
+        return $this->subject('Reset Password Notification')
+            ->with('token', $this->token);
+        ;
     }
 
     /**
