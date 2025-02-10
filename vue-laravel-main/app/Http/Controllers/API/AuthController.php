@@ -133,22 +133,23 @@ class AuthController extends BaseController
  * @param \Illuminate\Http\Request $request
  * @return \Illuminate\Http\JsonResponse
  */
-public function changePassword(Request $request){
-    $validator = Validator::make($request->all(), [
-        'old_password' => 'required',
-        'new_paxsword' => 'required|confirmed',
+public function changePassword(Request $request)
+{
+    $request->validate([
+        'current_password' => 'required|string',
+        'new_password' => 'required|string|confirmed',
     ]);
-    if($validator->fails()){
-        return $this->sendError('Validation Error', $validator->errors(), 400);
 
-    }
     $user = Auth::user();
-    if(!Hash::check($request->old_password, $user->password)){
-        return $this->sendError('Invalid old password', [], 400);
+
+    if (!Hash::check($request->input('current_password'), $user->password)) {
+        return response()->json(['message' => 'Invalid current password'], 400);
     }
-    $user->password = Hash::make($request->new_password);
+
+    $user->password = Hash::make($request->input('new_password'));
     $user->save();
-    return $this->sendResponse([], 'Password changed successfully');
+
+    return response()->json(['message' => 'Password changed successfully']);
 }
 
 /**
@@ -160,21 +161,30 @@ public function changePassword(Request $request){
  * 
  */
 
-    public function changeEmail(Request $request){
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|unique:users,email' . Auth::id(),
-        ]);
-        if($validator->fails()){
-            return $this->sendError(
-            'Validation Error', $validator->errors(), 400
-            );
-        }
+ public function changeEmail(Request $request)
+ {
+     $user = Auth::user();
 
-        $user = Auth::user();
-        $user->email = $request->email;
-        $user->save();
-        return $this->sendResponse([], 'Email changed successfully');
-    }
+     // Validate the request data
+     $validator = Validator::make($request->all(), [
+         'new_email' => 'required|email|unique:users,email,' . $user->id,
+     ]);
+
+     if ($validator->fails()) {
+         return $this->sendError('Validation Error.', $validator->errors(), 422); // Return a 422 status code for validation errors
+     }
+
+     try {
+         // Update the user's email
+         $user->email = $request->input('new_email');
+         $user->save();
+
+         return $this->sendResponse([], 'Email changed successfully');
+     } catch (\Exception $e) {
+         // Handle any exceptions that occur during the update process
+         return $this->sendError('Failed to change email.', ['error' => $e->getMessage()], 500);
+     }
+ }
 
     public function forgotPassword(Request $request){
         $validator = Validator::make($request->all(), [
@@ -198,4 +208,36 @@ public function changePassword(Request $request){
 
         
     }
+    public function updateUser(Request $request)
+  {
+      $user = Auth::user(); // Get the authenticated user
+
+      // Validate the request data
+      $request->validate([
+          'first_name' => 'required|string|max:255',
+          'last_name' => 'required|string|max:255',
+          'address' => 'nullable|string|max:255', // Address is optional (nullable)
+      ]);
+
+      try {
+          // Update the user's attributes
+          $user->first_name = $request->input('first_name');
+          $user->last_name = $request->input('last_name');
+          $user->address = $request->input('address'); // Assign null if address is empty
+          $user->save();  // Save the changes to the database
+
+          return response()->json([
+              'status' => 'success',
+              'message' => 'Profile updated successfully',
+              'data' => $user
+          ]);
+      } catch (\Exception $e) {
+          // Handle any exceptions that occur during the update process
+          return response()->json([
+              'status' => 'error',
+              'message' => 'Failed to update profile: ' . $e->getMessage(),
+          ], 500); // Return a 500 Internal Server Error status code
+      }
+  }
+
 }
