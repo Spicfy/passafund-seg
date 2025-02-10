@@ -39,8 +39,11 @@ Route::group([
 
     Route::put('/posts/{id}', [PostController::class, 'update']);
     Route::delete('/posts/{id}', [PostController::class, 'destroy']);
+    Route::post('/password/forgot', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.forgot');
+    Route::post('/password/reset', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
 
 
 });
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{id}', [PostController::class, 'show']);
+

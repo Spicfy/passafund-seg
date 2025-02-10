@@ -1,34 +1,44 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Validator;
-use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Models\User;
 
 class ForgotPasswordController extends Controller
 {
     public function sendResetLinkEmail(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:users,email', // ✅ Validation is enough to check existence
+        $token = 'your-generated-token'; // Generate a token for password reset
+
+        Mail::to($request->email)->send(new ForgotPassword($token));
+
+        return response()->json(['message' => 'Reset link sent to your email.']);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|confirmed|min:8',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
         }
 
-        // Send reset link
-        $status = Password::sendResetLink($request->only('email'));
-
-        if ($status == Password::RESET_LINK_SENT) {
-            return response()->json([
-                'status' => 'Password reset link sent to your email.',
-                'reset_url' => env('APP_URL') . '/reset-password?email=' . $request->email
-            ]);
+        if ($user->password_reset_token !== $request->token) {
+            return response()->json(['message' => 'Invalid token.'], 400);
         }
 
-        return response()->json(['error' => __($status)], 500);
+        $user->password = Hash::make($request->password);
+        $user->password_reset_token = null;
+        $user->save();
+
+        return response()->json(['message' => 'Password has been reset!']);
     }
 }
