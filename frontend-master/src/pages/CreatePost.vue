@@ -2,7 +2,7 @@
 /* eslint-disable */
 import axios from 'axios';
 import { ref, onMounted } from 'vue';
-import router from 'vue-router';
+import {useRouter} from 'vue-router';
 
 export default {
     setup() {
@@ -102,7 +102,7 @@ export default {
 </script>
 
 <template>
-    <GuestLayout>
+    
         <form class="form-container" @submit.prevent="createPost">
             <div class="form_title">New post</div>
             <div class="form_field title">
@@ -128,7 +128,7 @@ export default {
                 <router-link to="/">home</router-link>
             </p>
         </form>
-    </GuestLayout>
+  
 </template>
 
 <style scoped>

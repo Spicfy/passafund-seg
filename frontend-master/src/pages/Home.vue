@@ -75,9 +75,10 @@ const fetchUserData = async () => {
                     });
 
                   
-                    if (response.data && response.data.data.first_name && response.data.data.last_name) {
+                    if (response.data && response.data.data.first_name && response.data.data.last_name && response.data.data.id) {
                         firstName.value = response.data.data.first_name;
                         lastName.value = response.data.data.last_name;
+                        loggedUserId.value = response.data.data.id;
                     } else {
                         console.error('Could not retrieve user data dumb');
                         console.log(response.data)
@@ -142,6 +143,13 @@ const logout = async () => {
     }
     
 };
+const setEditingPost = (post) => {
+    if(!post){
+        console.error('No post to edit.');
+        return;
+    }
+    editingPost.value = { ...post };
+}
 const goToSettings = () => {
     router.push('/settings')
 }
@@ -151,7 +159,7 @@ const fetchPosts = async () => {
         const response = await fetch('http://localhost:8000/api/posts');
         if(response.ok){
             const data = await response.json();
-            posts.value = data;
+            posts.value = data.data;
             console.log('Posts:', posts.value);
         } else{
             console.error('Failed to fetch posts:', response.statusText);
@@ -162,10 +170,16 @@ const fetchPosts = async () => {
 }
 
 
+
+
 const updatePost = async () => {
-    try{
+    if (!editingPost.value) {
+        console.error('No post to edit.');
+        return;
+    }
+    try {
         const token = getAccessToken();
-        const response = await fetch(`http://localhost:8000/api/posts/${id}`, {
+        const response = await fetch(`http://localhost:8000/api/posts/${editingPost.value.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -173,20 +187,19 @@ const updatePost = async () => {
             },
             body: JSON.stringify(editingPost.value)
         });
-        if(response.ok){
+        if (response.ok) {
             fetchPosts();
             editingPost.value = null;
-        }else{
+        } else {
             console.error('Failed to update post:', response.statusText);
         }
-    }catch(error){
+    } catch (error) {
         console.error('Failed to update post:', error.message);
     }
-}
-
+};
 const deletePost = async (id) => {
     try{
-        const token = getAcessToken();
+        const token = getAccessToken();
         const response = await fetch(`http://localhost:8000/api/posts/${id}`, {
             method: 'DELETE',
             headers: {
@@ -194,6 +207,7 @@ const deletePost = async (id) => {
             }
         });
         if(response.ok){
+            console.log('Post deleted successfully');
             fetchPosts();
         } else{
             console.log('Error deleting Post:', error);
@@ -202,6 +216,9 @@ const deletePost = async (id) => {
         console.error('Error deleting Post:', error.message);
     }
 }
+const cancelEdit = () => {
+      editingPost.value = null
+    }
 
 watchEffect(() => {
     checkLoginStatus();
@@ -232,27 +249,55 @@ watchEffect(() => {
     <div class="pre-posts"><h1>Posts</h1>
     <button v-if="isLoggedIn"  @click="goToCreatePost">Create Post</button>
     </div>
-      <div class="post-grid">
-        <div v-for="post in posts" :key="post.id" class="post-card">
-            <h3>{{post.title}}</h3>
+    <div class="post-grid" v-if="posts && posts.length > 0">
+    <div v-for="post in posts" :key="post.id" class="post-card">
+        <template v-if="editingPost && editingPost.id === post.id" > 
+            <!-- Editing Mode -->
+            <input type="text" v-model="editingPost.title" class="edit-input" />
+            <textarea v-model="editingPost.message" class="edit-textarea"></textarea>
+            <select v-model="editingPost.type" class="edit-select">
+                    <option value="news">News</option>
+                    <option value="update">Update</option>
+                    <option value="task">Task</option>
+
+                </select>
+            <button @click="updatePost(post)">Save</button>
+            <button @click="cancelEdit">Cancel</button>
+        </template>
+        <template v-else>
+            <!-- Display Mode -->
+            <h3>{{ post.title }}</h3>
             <p>Message: {{ post.message }}</p>
-            <p class="post-type">Type: {{post.type}}</p>
+            <p class="post-type">Type: {{ post.type }}</p>
             <p class="post-author">Author: {{ post.user ? post.user.first_name + ' ' + post.user.last_name : 'Unknown' }}</p>
 
             <div v-if="isLoggedIn && post.user_id === loggedUserId">
-                <button  @click="editingPost = { ...post}">Edit</button>
-                <button @click="deletePost(post.id)">Delete</button>
+                <button class="post-btn" @click="setEditingPost(post)">Edit</button>
+                <button class="post-btn" @click="deletePost(post.id)">Delete</button>
             </div>
-        </div>
-      </div>
+        </template>
+    </div>
+</div>
 
 
 
     </div>
+
+ 
   </template>
   
   <style scoped>
-
+.edit-input, .edit-textarea, .edit-select{
+    margin: 10px;
+    background-color: #dddddd;
+    color: #666666;
+    padding: 1em;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    outline: none;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 500;
+}
   .pre-posts{
     height: 100px;
     width: 100%;
@@ -265,6 +310,13 @@ watchEffect(() => {
   .pre-posts >*{
     margin: 20px;
   }
+
+.post-btn{
+    background-color: #007bff;
+    color: white;
+
+    margin: 10px;
+}
   .container {
       overflow-x: hidden;
       max-width: 100%;
@@ -307,6 +359,9 @@ watchEffect(() => {
       background-color: #f0f0f0;
   
   }
+  .edit > *{
+    margin: 10px;
+  }
   
   button {
       padding: 10px 20px;
@@ -339,6 +394,7 @@ watchEffect(() => {
 }
 .post-card > * {
     text-align: center;
+    height: auto;
 }
 
 .post-card {
