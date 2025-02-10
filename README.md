@@ -1,3 +1,44 @@
+# Post Management Application
+
+A full-stack application for Passafund's software engineer internship assignment featuring user authentication and post CRUD operations.
+
+## Features
+
+- **User Authentication**
+  - Registration with email verification
+  - Login/Logout functionality
+  - Password reset functionality
+- **Post Management**
+  - Create new posts with titles and content
+  - Edit existing posts
+  - Delete posts
+  - Categorize posts (News/Update/Task)
+- **User Interface**
+  - Responsive design
+  - Real-time post updates
+  - Interactive forms with validation
+  - Visual feedback for actions
+- **Security**
+  - CSRF protection
+  - API authentication
+  - Authorization checks
+
+## API Endpoints
+
+### Authentication
+- `POST /api/register` - User registration
+- `POST /api/login` - User login
+- `POST /api/logout` - User logout
+- `GET /api/user` - Get authenticated user details
+
+### Posts
+- `GET /api/posts` - List all posts
+- `POST /api/posts` - Create new post
+- `PUT /api/posts/{id}` - Update post
+- `DELETE /api/posts/{id}` - Delete post
+
+## Directory Structure
+
 # Post app for passafund software engineer internship asignment
 
 Support User and post CRUD functionality
