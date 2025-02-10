@@ -26,9 +26,9 @@ A full-stack application for Passafund's software engineer internship assignment
 ## API Endpoints
 
 ### Authentication
-- `POST /api/register` - User registration
-- `POST /api/login` - User login
-- `POST /api/logout` - User logout
+- `POST /api//auth/register` - User registration
+- `POST /api//auth/login` - User login
+- `POST /api//auth/logout` - User logout
 - `GET /api/user` - Get authenticated user details
 
 ### Posts
