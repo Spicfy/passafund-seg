@@ -22,6 +22,8 @@ A full-stack application for Passafund's software engineer internship assignment
   - CSRF protection
   - API authentication
   - Authorization checks
+ 
+    Reset password link is conducted through mailtrap.io
 
 ## API Endpoints
 
@@ -86,6 +88,16 @@ DB_PASSWORD=your_database_password
 
 Frontend URL for password reset (if applicable):
 FRONTEND_URL=http://localhost:8081
+
+to receive reset password link to your email fill in this section with your credentials on mailtrap.io
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_smtp_username
+MAIL_PASSWORD=your_smtp_password
+MAIL_FROM_ADDRESS="your_email@example.com"
+MAIL_FROM_NAME="Your Application Name"
+
 
 Install php dependencies using composer: 
 composer install
